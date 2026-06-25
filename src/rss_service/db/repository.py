@@ -315,6 +315,198 @@ class Repository:
         ).fetchone()
         return row_to_dict(row) if row else None
 
+    def insert_external_item(
+        self,
+        *,
+        item_id: str,
+        provider: str | None,
+        query: str | None,
+        title: str,
+        canonical_url: str,
+        summary: str,
+        category: str,
+        published_at: str | None,
+        retrieved_at: str,
+        dedupe_key: str,
+        content_hash: str,
+    ) -> str:
+        now = utc_now()
+        cursor = self.connection.execute(
+            "SELECT id FROM external_items WHERE dedupe_key = ?",
+            (dedupe_key,),
+        ).fetchone()
+        if cursor:
+            self.connection.execute(
+                """
+                UPDATE external_items
+                SET provider = ?,
+                    query = ?,
+                    title = ?,
+                    canonical_url = ?,
+                    summary = ?,
+                    category = ?,
+                    published_at = ?,
+                    retrieved_at = ?,
+                    content_hash = ?
+                WHERE dedupe_key = ?
+                """,
+                (
+                    provider,
+                    query,
+                    title,
+                    canonical_url,
+                    summary,
+                    category,
+                    published_at,
+                    retrieved_at,
+                    content_hash,
+                    dedupe_key,
+                ),
+            )
+            return "updated"
+        self.connection.execute(
+            """
+            INSERT INTO external_items (
+              id, provider, query, title, canonical_url, summary, category,
+              published_at, retrieved_at, dedupe_key, content_hash, created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                item_id,
+                provider,
+                query,
+                title,
+                canonical_url,
+                summary,
+                category,
+                published_at,
+                retrieved_at,
+                dedupe_key,
+                content_hash,
+                now,
+            ),
+        )
+        return "inserted"
+
+    def list_external_items(
+        self,
+        *,
+        limit: int = 100,
+        category: str | None = None,
+        period_start: str | None = None,
+        period_end: str | None = None,
+    ) -> list[dict[str, Any]]:
+        clauses = ["report_eligible = 1"]
+        params: list[Any] = []
+        if category:
+            clauses.append("category = ?")
+            params.append(category)
+        if period_start:
+            clauses.append("COALESCE(published_at, retrieved_at) >= ?")
+            params.append(period_start)
+        if period_end:
+            clauses.append("COALESCE(published_at, retrieved_at) < ?")
+            params.append(period_end)
+        params.append(limit)
+        rows = self.connection.execute(
+            f"""
+            SELECT * FROM external_items
+            WHERE {' AND '.join(clauses)}
+            ORDER BY COALESCE(published_at, retrieved_at) DESC
+            LIMIT ?
+            """,
+            params,
+        ).fetchall()
+        return [row_to_dict(row) for row in rows]
+
+    def get_external_item(self, item_id: str) -> dict[str, Any] | None:
+        row = self.connection.execute(
+            "SELECT * FROM external_items WHERE id = ?",
+            (item_id,),
+        ).fetchone()
+        return row_to_dict(row) if row else None
+
+    def delete_external_item(self, item_id: str) -> bool:
+        cursor = self.connection.execute("DELETE FROM external_items WHERE id = ?", (item_id,))
+        return cursor.rowcount > 0
+
+    def get_report(self, report_id: str) -> dict[str, Any] | None:
+        row = self.connection.execute("SELECT * FROM reports WHERE id = ?", (report_id,)).fetchone()
+        return row_to_dict(row) if row else None
+
+    def list_reports(self, limit: int = 100) -> list[dict[str, Any]]:
+        rows = self.connection.execute(
+            "SELECT * FROM reports ORDER BY generated_at DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+        return [row_to_dict(row) for row in rows]
+
+    def save_report(
+        self,
+        *,
+        report_id: str,
+        report_type: str,
+        period_start: str,
+        period_end: str,
+        generated_at: str,
+        markdown_path: str,
+        sources_json_path: str,
+        source_count: int,
+        item_count: int,
+        items: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        now = utc_now()
+        with self.connection:
+            self.connection.execute("DELETE FROM report_items WHERE report_id = ?", (report_id,))
+            self.connection.execute("DELETE FROM reports WHERE id = ?", (report_id,))
+            self.connection.execute(
+                """
+                INSERT INTO reports (
+                  id, report_type, period_start, period_end, generated_at,
+                  markdown_path, sources_json_path, source_count, item_count,
+                  status, created_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'completed', ?)
+                """,
+                (
+                    report_id,
+                    report_type,
+                    period_start,
+                    period_end,
+                    generated_at,
+                    markdown_path,
+                    sources_json_path,
+                    source_count,
+                    item_count,
+                    now,
+                ),
+            )
+            for item in items:
+                self.connection.execute(
+                    """
+                    INSERT INTO report_items (
+                      report_id, item_id, item_source, section_name, rank_in_section
+                    )
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (
+                        report_id,
+                        item["item_id"],
+                        item["item_source"],
+                        item["section_name"],
+                        item["rank_in_section"],
+                    ),
+                )
+        report = self.get_report(report_id)
+        if report is None:
+            raise KeyError(report_id)
+        return report
+
+    def delete_report(self, report_id: str) -> bool:
+        cursor = self.connection.execute("DELETE FROM reports WHERE id = ?", (report_id,))
+        return cursor.rowcount > 0
+
     def list_categories(self) -> list[str]:
         rows = self.connection.execute(
             "SELECT DISTINCT category FROM feeds ORDER BY category"

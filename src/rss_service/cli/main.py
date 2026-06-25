@@ -1,6 +1,7 @@
 import sqlite3
 import subprocess
 from contextlib import AbstractContextManager
+from datetime import datetime
 from pathlib import Path
 from typing import Annotated
 
@@ -14,11 +15,17 @@ from rss_service.db.repository import Repository
 from rss_service.feeds.parser import parse_feed_bytes
 from rss_service.feeds.service import FeedService, run_fetch_sync
 from rss_service.logging import configure_logging
+from rss_service.mcp.server import run_stdio_server
+from rss_service.reports.generator import ReportGenerator
 from rss_service.settings import get_settings
 
 app = typer.Typer(no_args_is_help=True)
 feeds_app = typer.Typer(no_args_is_help=True)
+generate_app = typer.Typer(no_args_is_help=True)
+reports_app = typer.Typer(no_args_is_help=True)
 app.add_typer(feeds_app, name="feeds")
+app.add_typer(generate_app, name="generate")
+app.add_typer(reports_app, name="reports")
 
 
 @app.callback()
@@ -156,6 +163,71 @@ def fetch(
     )
 
 
+def _parse_at(value: str) -> datetime:
+    return datetime.fromisoformat(value)
+
+
+def _generate(report_type: str, at: str, force: bool) -> None:
+    settings = get_settings()
+    with open_connection(settings.db_path) as connection:
+        report = ReportGenerator(Repository(connection), settings).generate(
+            report_type=report_type,
+            at=_parse_at(at),
+            force=force,
+        )
+    typer.echo(
+        f"{report['id']} {report['status']} "
+        f"{report['item_count']} items -> {report['markdown_path']}"
+    )
+
+
+@generate_app.command("daily")
+def generate_daily(
+    at: Annotated[str, typer.Option("--at")],
+    force: Annotated[bool, typer.Option("--force")] = False,
+) -> None:
+    _generate("daily", at, force)
+
+
+@generate_app.command("weekly")
+def generate_weekly(
+    at: Annotated[str, typer.Option("--at")],
+    force: Annotated[bool, typer.Option("--force")] = False,
+) -> None:
+    _generate("weekly", at, force)
+
+
+@generate_app.command("monthly")
+def generate_monthly(
+    at: Annotated[str, typer.Option("--at")],
+    force: Annotated[bool, typer.Option("--force")] = False,
+) -> None:
+    _generate("monthly", at, force)
+
+
+@reports_app.command("list")
+def reports_list() -> None:
+    settings = get_settings()
+    with open_connection(settings.db_path) as connection:
+        reports = Repository(connection).list_reports()
+    for report in reports:
+        typer.echo(
+            f"{report['id']}\t{report['report_type']}\t"
+            f"{report['item_count']}\t{report['markdown_path']}"
+        )
+
+
+@reports_app.command("read")
+def reports_read(report_id: str) -> None:
+    settings = get_settings()
+    with open_connection(settings.db_path) as connection:
+        report = Repository(connection).get_report(report_id)
+    if report is None:
+        raise typer.Exit(code=1)
+    markdown = Path(str(report["markdown_path"])).read_text(encoding="utf-8")
+    typer.echo(markdown)
+
+
 @app.command()
 def serve(
     host: str | None = typer.Option(None, "--host"),
@@ -168,6 +240,11 @@ def serve(
         port=port or settings.port,
         reload=False,
     )
+
+
+@app.command()
+def mcp() -> None:
+    run_stdio_server()
 
 
 @app.command()

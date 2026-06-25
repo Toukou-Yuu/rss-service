@@ -1,0 +1,57 @@
+---
+report_id: {{ report_id }}
+report_type: {{ report_type }}
+period_start: {{ period_start }}
+period_end: {{ period_end }}
+generated_at: {{ generated_at }}
+source_count: {{ source_count }}
+item_count: {{ item_count }}
+knowledge_base_write: false
+---
+
+# Hikari Daily Briefing - {{ period_label }}
+
+> 本报告由 rss-service 生成，仅作为 Hermes 的信息输入层。
+> rss-service 不自动写入知识库。
+
+## 今日概览
+
+{% for line in overview -%}
+- {{ line }}
+{% endfor %}
+
+## 要闻
+
+{% for section in sections -%}
+{% for item in section.entries[:3] -%}
+### {{ loop.index }}. {{ item.title }}
+
+- 来源：{{ item.source_name }}
+- 链接：<{{ item.primary_url }}>
+- 摘要：{{ item.summary }}
+- 来源类型：{{ item.source_type }}
+
+{% endfor -%}
+{% endfor -%}
+
+{% for section in sections %}
+## {{ section.name }}
+
+{% if section.entries -%}
+{% for item in section.entries %}
+### {{ item.rank_in_section }}. {{ item.title }}
+
+- 来源：{{ item.source_name }}
+- 链接：<{{ item.primary_url }}>
+- 摘要：{{ item.summary }}
+- 来源类型：{{ item.source_type }}
+
+{% endfor -%}
+{% else -%}
+暂无新条目。
+{% endif %}
+{% endfor %}
+
+## 来源索引
+
+见同名 `.sources.json`。

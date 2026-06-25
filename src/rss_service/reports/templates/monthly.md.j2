@@ -1,0 +1,50 @@
+---
+report_id: {{ report_id }}
+report_type: {{ report_type }}
+period_start: {{ period_start }}
+period_end: {{ period_end }}
+generated_at: {{ generated_at }}
+source_count: {{ source_count }}
+item_count: {{ item_count }}
+knowledge_base_write: false
+---
+
+# Hikari Monthly Briefing - {{ period_label }}
+
+## 本月概览
+
+{% for line in overview -%}
+- {{ line }}
+{% endfor %}
+
+## 本月主题演化
+
+- 主题演化由 Hermes 结合上下文继续分析，rss-service 只保留来源和简报材料。
+
+{% for section in sections %}
+## {{ section.name }}
+
+{% if section.entries -%}
+{% for item in section.entries %}
+### {{ item.rank_in_section }}. {{ item.title }}
+
+- 来源：{{ item.source_name }}
+- 链接：<{{ item.primary_url }}>
+- 摘要：{{ item.summary }}
+- 来源类型：{{ item.source_type }}
+
+{% endfor -%}
+{% else -%}
+暂无新条目。
+{% endif %}
+{% endfor %}
+
+## 长期关注候选
+
+{% for line in overview[:5] -%}
+- {{ line }}
+{% endfor %}
+
+## 来源索引
+
+见同名 `.sources.json`。

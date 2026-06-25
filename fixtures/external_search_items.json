@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "provider": "tavily",
+      "query": "latest AI agent framework release",
+      "title": "Search result highlights agent runtime release",
+      "url": "https://search.example.com/agent-runtime-release?utm_campaign=test",
+      "summary": "A search result snippet about an agent runtime release.",
+      "category": "ai_agent",
+      "published_at": null,
+      "retrieved_at": "2026-06-24T09:30:00+08:00"
+    }
+  ]
+}
