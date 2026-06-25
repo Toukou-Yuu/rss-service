@@ -1,0 +1,41 @@
+services:
+  rss-service:
+    image: ${RSS_SERVICE_IMAGE:-toukouyuu/rss-service:latest}
+    container_name: rss-service
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    environment:
+      TZ: Asia/Singapore
+      RSS_DB_PATH: /var/lib/rss-service/rss.sqlite3
+      RSS_REPORTS_DIR: /reports
+      RSS_CONFIG_DIR: /app/config
+      RSS_SERVICE_HOST: 0.0.0.0
+      RSS_SERVICE_PORT: 8787
+    volumes:
+      - rss_state:/var/lib/rss-service
+      - ./reports:/reports
+      - ./config:/app/config:ro
+    ports:
+      - "127.0.0.1:8787:8787"
+    healthcheck:
+      test: ["CMD", "python", "-m", "rss_service", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  rsshub:
+    image: diygod/rsshub:latest
+    container_name: rsshub
+    restart: unless-stopped
+    profiles:
+      - rsshub
+    environment:
+      NODE_ENV: production
+      PORT: 1200
+      CACHE_TYPE: memory
+    ports:
+      - "127.0.0.1:1200:1200"
+
+volumes:
+  rss_state:

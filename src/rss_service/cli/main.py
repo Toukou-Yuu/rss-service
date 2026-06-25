@@ -9,6 +9,7 @@ import httpx
 import typer
 import uvicorn
 
+from rss_service.backup import create_backup, restore_backup
 from rss_service.db.connection import open_connection
 from rss_service.db.migrations import run_migrations
 from rss_service.db.repository import Repository
@@ -226,6 +227,25 @@ def reports_read(report_id: str) -> None:
         raise typer.Exit(code=1)
     markdown = Path(str(report["markdown_path"])).read_text(encoding="utf-8")
     typer.echo(markdown)
+
+
+@app.command()
+def backup(output: Annotated[Path, typer.Option("--output")]) -> None:
+    settings = get_settings()
+    path = create_backup(settings, output)
+    typer.echo(f"backup written: {path}")
+
+
+@app.command()
+def restore(
+    input_path: Annotated[Path, typer.Option("--input")],
+    yes: Annotated[bool, typer.Option("--yes")] = False,
+) -> None:
+    if not yes:
+        typer.echo("restore requires --yes")
+        raise typer.Exit(code=1)
+    restore_backup(get_settings(), input_path)
+    typer.echo("restore completed")
 
 
 @app.command()

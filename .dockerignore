@@ -1,0 +1,12 @@
+.git
+.venv
+.pytest_cache
+.ruff_cache
+.mypy_cache
+data
+reports
+backups
+rss-service_codex_taskbook.md
+.env
+.env.*
+!.env.example
