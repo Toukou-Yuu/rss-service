@@ -271,8 +271,9 @@ environment:
   WATCHTOWER_CLEANUP: "true"
 ```
 
-Release tags `v*.*.*` publish Docker Hub images through GitHub Actions when
+Pushes to `main` publish Docker Hub images through GitHub Actions when
 `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` repository secrets are configured.
+Release tags `v*.*.*` also publish the matching version tag.
 
 ## Backup And Restore
 
