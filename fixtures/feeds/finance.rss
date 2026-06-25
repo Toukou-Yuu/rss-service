@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Finance Fixture</title>
+    <link>https://finance.example.com</link>
+    <description>Fixture feed for finance items</description>
+    <item>
+      <title>AI infrastructure suppliers rally after earnings</title>
+      <guid>finance-earnings-2026-06-23</guid>
+      <link>https://finance.example.com/ai-infra-earnings</link>
+      <pubDate>Tue, 23 Jun 2026 15:30:00 GMT</pubDate>
+      <description>Market coverage for AI infrastructure suppliers after earnings.</description>
+    </item>
+  </channel>
+</rss>

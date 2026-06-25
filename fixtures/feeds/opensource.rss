@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Open Source Fixture</title>
+    <link>https://example.org</link>
+    <description>Fixture feed for open source projects</description>
+    <item>
+      <title>Example project ships v2.0</title>
+      <guid>https://example.org/project/releases/v2</guid>
+      <link>https://example.org/project/releases/v2?utm_medium=rss</link>
+      <pubDate>Tue, 23 Jun 2026 11:00:00 GMT</pubDate>
+      <description><![CDATA[<strong>Version 2.0</strong> improves CLI performance and release automation.]]></description>
+    </item>
+    <item>
+      <title>Example project ships v2.0</title>
+      <guid>https://example.org/project/releases/v2-duplicate</guid>
+      <link>https://example.org/project/releases/v2?utm_medium=mirror</link>
+      <pubDate>Tue, 23 Jun 2026 11:00:00 GMT</pubDate>
+      <description>Duplicate item with a different tracking parameter.</description>
+    </item>
+  </channel>
+</rss>

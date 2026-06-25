@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Malformed Fixture</title>
+    <item>
+      <title>Malformed but parseable item</title>
+      <guid>malformed-item</guid>
+      <link>https://malformed.example.com/item</link>
+      <description>Parser should keep parseable entries when bozo is set.</description>
+    </item>
+  </channel>

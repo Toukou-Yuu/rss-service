@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>AI Agent Fixture</title>
+  <id>https://example.com/ai-agent.atom</id>
+  <updated>2026-06-24T09:30:00+08:00</updated>
+  <entry>
+    <title>Agent framework adds tool approval controls</title>
+    <id>tag:example.com,2026:agent-approval</id>
+    <link href="https://example.com/agent-approval?utm_source=newsletter#section"/>
+    <updated>2026-06-24T09:00:00+08:00</updated>
+    <published>2026-06-24T08:30:00+08:00</published>
+    <summary><![CDATA[<p>A new release adds explicit approval controls for agent tool calls.</p>]]></summary>
+  </entry>
+  <entry>
+    <title>Small agent benchmark highlights workflow reliability</title>
+    <id>tag:example.com,2026:agent-benchmark</id>
+    <link href="https://example.com/agent-benchmark"/>
+    <updated>2026-06-23T18:00:00+08:00</updated>
+    <published>2026-06-23T18:00:00+08:00</published>
+  </entry>
+</feed>
