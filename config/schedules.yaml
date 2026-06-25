@@ -1,0 +1,12 @@
+timezone: "Asia/Singapore"
+
+daily:
+  time: "10:00"
+
+weekly:
+  weekday: "monday"
+  time: "10:00"
+
+monthly:
+  day: 1
+  time: "10:00"

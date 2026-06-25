@@ -1,0 +1,40 @@
+categories:
+  ai_agent:
+    title: "AI / Agent"
+    description: "AI, LLM, Agent, MCP, automation, tool calling"
+    report_section: "AI 与 Agent"
+    default_limit_daily: 8
+    default_limit_weekly: 15
+    default_limit_monthly: 20
+
+  opensource:
+    title: "Open Source"
+    description: "GitHub releases, devtools, open source projects"
+    report_section: "开源项目"
+    default_limit_daily: 8
+    default_limit_weekly: 15
+    default_limit_monthly: 20
+
+  dev_ecosystem:
+    title: "Developer Ecosystem"
+    description: "Codex, Claude Code, OpenCode, Docker, Tailscale, RAG infrastructure"
+    report_section: "开发生态"
+    default_limit_daily: 6
+    default_limit_weekly: 12
+    default_limit_monthly: 18
+
+  finance:
+    title: "Finance"
+    description: "markets, macro, public companies, AI-related finance"
+    report_section: "金融市场"
+    default_limit_daily: 6
+    default_limit_weekly: 12
+    default_limit_monthly: 18
+
+  rumor:
+    title: "Rumor / Unconfirmed"
+    description: "unconfirmed information, leaks, early signals"
+    report_section: "前瞻与传闻"
+    default_limit_daily: 3
+    default_limit_weekly: 8
+    default_limit_monthly: 10

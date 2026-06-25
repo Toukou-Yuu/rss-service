@@ -1,0 +1,21 @@
+feeds:
+  - name: "OpenAI News"
+    url: "https://openai.com/news/rss.xml"
+    category: "ai_agent"
+    source_type: "rss"
+    enabled: true
+    priority: 90
+
+  - name: "GitHub Releases - example"
+    url: "https://github.com/example/project/releases.atom"
+    category: "opensource"
+    source_type: "atom"
+    enabled: true
+    priority: 60
+
+  - name: "RSSHub Example Route"
+    url: "http://rsshub:1200/example/route"
+    category: "dev_ecosystem"
+    source_type: "rsshub"
+    enabled: false
+    priority: 50

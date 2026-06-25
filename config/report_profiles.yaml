@@ -1,0 +1,38 @@
+daily:
+  title: "Hikari Daily Briefing"
+  period_mode: "previous_24h"
+  sections:
+    - overview
+    - headlines
+    - ai_agent
+    - opensource
+    - dev_ecosystem
+    - finance
+    - rumor
+    - source_index
+
+weekly:
+  title: "Hikari Weekly Briefing"
+  period_mode: "previous_calendar_week"
+  sections:
+    - overview
+    - weekly_trends
+    - ai_agent
+    - opensource
+    - dev_ecosystem
+    - finance
+    - follow_up_candidates
+    - source_index
+
+monthly:
+  title: "Hikari Monthly Briefing"
+  period_mode: "previous_calendar_month"
+  sections:
+    - overview
+    - monthly_themes
+    - ai_agent
+    - opensource
+    - dev_ecosystem
+    - finance
+    - long_term_candidates
+    - source_index
