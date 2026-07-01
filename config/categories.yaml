@@ -7,6 +7,14 @@ categories:
     default_limit_weekly: 15
     default_limit_monthly: 20
 
+  reddit-ai:
+    title: "Reddit AI"
+    description: "Reddit AI communities, agent workflows, MCP, Claude and OpenAI discussions"
+    report_section: "Reddit AI 社区"
+    default_limit_daily: 10
+    default_limit_weekly: 20
+    default_limit_monthly: 30
+
   opensource:
     title: "Open Source"
     description: "GitHub releases, devtools, open source projects"
