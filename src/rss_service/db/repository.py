@@ -279,7 +279,7 @@ class Repository:
         clauses = ["report_eligible = 1"]
         params: list[Any] = []
         if category:
-            clauses.append("category = ?")
+            clauses.append("entries.category = ?")
             params.append(category)
         if period_start:
             clauses.append("COALESCE(published_at, fetched_at) >= ?")

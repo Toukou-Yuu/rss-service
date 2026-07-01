@@ -80,6 +80,15 @@ def test_fetch_contract_with_empty_db(client: TestClient) -> None:
     assert response.json()["status"] == "completed"
 
 
+def test_entries_category_filter_contract(client: TestClient) -> None:
+    seed_feed_data()
+    response = client.get("/entries?category=ai_agent&limit=10", headers=auth())
+    assert response.status_code == 200
+    entries = response.json()
+    assert entries
+    assert {entry["category"] for entry in entries} == {"ai_agent"}
+
+
 def test_external_items_contract(client: TestClient) -> None:
     payload = {
         "items": [

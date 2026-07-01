@@ -109,6 +109,7 @@ class FeedService:
             timeout_seconds=self.settings.fetch_timeout_seconds,
             retry_times=self.settings.fetch_retry_times,
             per_domain_concurrency=self.settings.per_domain_concurrency,
+            proxy_url=self.settings.fetch_proxy,
         )
         semaphore = asyncio.Semaphore(self.settings.fetch_concurrency)
 
@@ -175,9 +176,10 @@ class FeedService:
             self.repository.connection.commit()
             return {"feed_id": feed["id"], "status": "success", "new_entry_count": new_count}
         except Exception as exc:
+            error = exception_message(exc)
             self.repository.update_feed_failure(
                 int(feed["id"]),
-                error=str(exc),
+                error=error,
                 checked_at=checked_at,
             )
             self.repository.add_fetch_result(
@@ -186,7 +188,7 @@ class FeedService:
                 status="error",
                 http_status=None,
                 elapsed_ms=None,
-                error=str(exc),
+                error=error,
                 checked_at=checked_at,
             )
             self.repository.connection.commit()
@@ -196,13 +198,13 @@ class FeedService:
                 "feed_fetch_failed",
                 feed_id=feed["id"],
                 feed_name=feed["name"],
-                error=str(exc),
+                error=error,
             )
             return {
                 "feed_id": feed["id"],
                 "status": "error",
                 "new_entry_count": 0,
-                "error": str(exc),
+                "error": error,
             }
 
     def _fetch_fixture_feed(
@@ -237,9 +239,10 @@ class FeedService:
             self.repository.connection.commit()
             return {"feed_id": feed["id"], "status": "success", "new_entry_count": new_count}
         except Exception as exc:
+            error = exception_message(exc)
             self.repository.update_feed_failure(
                 int(feed["id"]),
-                error=str(exc),
+                error=error,
                 checked_at=checked_at,
             )
             self.repository.add_fetch_result(
@@ -248,7 +251,7 @@ class FeedService:
                 status="error",
                 http_status=None,
                 elapsed_ms=0,
-                error=str(exc),
+                error=error,
                 checked_at=checked_at,
             )
             self.repository.connection.commit()
@@ -256,7 +259,7 @@ class FeedService:
                 "feed_id": feed["id"],
                 "status": "error",
                 "new_entry_count": 0,
-                "error": str(exc),
+                "error": error,
             }
 
     def _fixture_path_for_feed(self, feed: dict[str, Any], fixture_dir: Path) -> Path:
@@ -327,3 +330,10 @@ def run_fetch_sync(
             fixture_dir=fixture_dir,
         )
     )
+
+
+def exception_message(exc: Exception) -> str:
+    message = str(exc).strip()
+    if message:
+        return message
+    return f"{type(exc).__module__}.{type(exc).__name__}"

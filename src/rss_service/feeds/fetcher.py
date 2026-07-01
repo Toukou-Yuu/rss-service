@@ -39,10 +39,12 @@ class FeedFetcher:
         timeout_seconds: float,
         retry_times: int,
         per_domain_concurrency: int,
+        proxy_url: str | None = None,
     ) -> None:
         self.user_agent = user_agent
         self.timeout_seconds = timeout_seconds
         self.retry_times = retry_times
+        self.proxy_url = proxy_url
         self.domain_limiters: defaultdict[str, asyncio.Semaphore] = defaultdict(
             lambda: asyncio.Semaphore(per_domain_concurrency)
         )
@@ -61,7 +63,11 @@ class FeedFetcher:
 
         timeout = httpx.Timeout(self.timeout_seconds)
         start = time.monotonic()
-        async with httpx.AsyncClient(timeout=timeout, follow_redirects=True) as client:
+        async with httpx.AsyncClient(
+            timeout=timeout,
+            follow_redirects=True,
+            proxy=self.proxy_url,
+        ) as client:
             for attempt in range(self.retry_times + 1):
                 response = await client.get(request.url, headers=headers)
                 if response.status_code not in RETRY_STATUSES or attempt == self.retry_times:
@@ -74,6 +80,8 @@ class FeedFetcher:
                         status_code=response.status_code,
                         elapsed_ms=elapsed_ms,
                     )
+                    if response.status_code >= 400:
+                        raise RuntimeError(f"feed fetch returned HTTP {response.status_code}")
                     return FetchResponse(
                         status_code=response.status_code,
                         final_url=str(response.url),

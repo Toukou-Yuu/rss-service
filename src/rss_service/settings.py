@@ -1,7 +1,8 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -23,10 +24,18 @@ class Settings(BaseSettings):
     fetch_timeout_seconds: float = Field(default=20.0, alias="RSS_FETCH_TIMEOUT_SECONDS")
     fetch_retry_times: int = Field(default=2, alias="RSS_FETCH_RETRY_TIMES")
     per_domain_concurrency: int = Field(default=2, alias="RSS_PER_DOMAIN_CONCURRENCY")
+    fetch_proxy: str | None = Field(default=None, alias="RSS_FETCH_PROXY")
     summary_max_length: int = Field(default=240, alias="RSS_SUMMARY_MAX_LENGTH")
 
     enable_internal_scheduler: bool = Field(default=False, alias="RSS_ENABLE_INTERNAL_SCHEDULER")
     log_level: str = Field(default="INFO", alias="RSS_LOG_LEVEL")
+
+    @field_validator("fetch_proxy", mode="before")
+    @classmethod
+    def blank_fetch_proxy_is_none(cls, value: Any) -> Any:
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
 
 
 @lru_cache(maxsize=1)
