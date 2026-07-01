@@ -25,6 +25,30 @@ services:
       timeout: 5s
       retries: 3
 
+  rss-service-mcp:
+    image: ${RSS_SERVICE_IMAGE:-toukouyuu/rss-service:latest}
+    container_name: rss-service-mcp
+    restart: unless-stopped
+    user: "${RSS_SERVICE_UID:-1002}:${RSS_SERVICE_GID:-1002}"
+    command: ["rss-service", "mcp-http", "--host", "0.0.0.0", "--port", "8788", "--path", "/mcp"]
+    env_file:
+      - path: .env.prod
+        required: false
+    environment:
+      TZ: Asia/Singapore
+      RSS_DB_PATH: /var/lib/rss-service/rss.sqlite3
+      RSS_REPORTS_DIR: /reports
+      RSS_CONFIG_DIR: /app/config
+    volumes:
+      - rss_state:/var/lib/rss-service
+      - ./reports:/reports
+      - ./config:/app/config:ro
+    ports:
+      - "127.0.0.1:8788:8788"
+    depends_on:
+      rss-service:
+        condition: service_healthy
+
   rsshub:
     image: diygod/rsshub:latest
     container_name: rsshub

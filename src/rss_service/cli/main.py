@@ -16,7 +16,11 @@ from rss_service.db.repository import Repository
 from rss_service.feeds.parser import parse_feed_bytes
 from rss_service.feeds.service import FeedService, run_fetch_sync
 from rss_service.logging import configure_logging
-from rss_service.mcp.server import run_stdio_server
+from rss_service.mcp.server import (
+    run_legacy_json_stdio_server,
+    run_stdio_server,
+    run_streamable_http_server,
+)
 from rss_service.reports.generator import ReportGenerator
 from rss_service.settings import get_settings
 
@@ -265,6 +269,20 @@ def serve(
 @app.command()
 def mcp() -> None:
     run_stdio_server()
+
+
+@app.command("mcp-http")
+def mcp_http(
+    host: str = typer.Option("127.0.0.1", "--host"),
+    port: int = typer.Option(8788, "--port"),
+    path: str = typer.Option("/mcp", "--path"),
+) -> None:
+    run_streamable_http_server(host=host, port=port, path=path)
+
+
+@app.command("mcp-json")
+def mcp_json() -> None:
+    run_legacy_json_stdio_server()
 
 
 @app.command()

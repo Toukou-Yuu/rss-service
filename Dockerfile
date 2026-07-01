@@ -1,15 +1,21 @@
 FROM python:3.12-slim
 
+ARG APT_MIRROR=https://mirrors.tuna.tsinghua.edu.cn/debian
+ARG UV_INSTALL_URL=https://astral.sh/uv/install.sh
+ARG UV_DEFAULT_INDEX=https://pypi.tuna.tsinghua.edu.cn/simple
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy
+    UV_LINK_MODE=copy \
+    UV_DEFAULT_INDEX=${UV_DEFAULT_INDEX}
 
 WORKDIR /app
 
-RUN apt-get update \
+RUN sed -i "s#http://deb.debian.org/debian#${APT_MIRROR}#g; s#http://deb.debian.org/debian-security#${APT_MIRROR}-security#g" /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
     && apt-get install -y --no-install-recommends curl ca-certificates \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh \
+    && curl -LsSf "${UV_INSTALL_URL}" | sh \
     && apt-get purge -y --auto-remove curl \
     && rm -rf /var/lib/apt/lists/*
 
@@ -36,6 +42,6 @@ ENV RSS_DB_PATH=/var/lib/rss-service/rss.sqlite3 \
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
   CMD python -m rss_service healthcheck
 
-EXPOSE 8787
+EXPOSE 8787 8788
 
 CMD ["rss-service", "serve"]

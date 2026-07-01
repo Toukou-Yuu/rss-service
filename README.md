@@ -222,11 +222,21 @@ Reports:
 
 ## MCP Tools
 
-`rss-service` exposes tool functions in `rss_service.mcp.tools` and a simple stdio wrapper:
+`rss-service` exposes native MCP tools backed by the same service layer as the REST API.
+
+Local stdio development:
 
 ```bash
 uv run rss-service mcp
 ```
+
+Production HTTP / Streamable HTTP:
+
+```bash
+uv run rss-service mcp-http --host 127.0.0.1 --port 8788 --path /mcp
+```
+
+See [docs/mcp.md](docs/mcp.md) for Hermes configuration, response envelope, permissions, and tests.
 
 Tool names:
 
@@ -241,7 +251,7 @@ Tool names:
 - `rss_read_report`
 - `rss_get_report_sources`
 
-MCP tools call the same service layer used by REST and CLI.
+MCP tools call the same service layer used by REST and CLI. They return a stable `{ok, summary, data, warnings}` envelope for Agent consumption.
 
 ## Docker Deployment
 
@@ -294,6 +304,7 @@ uv run mypy src
 uv run pytest
 docker build -t rss-service:local .
 docker compose -f docker-compose.prod.yml config
+uv run pytest tests/mcp -q
 ```
 
 Tests use fixtures and do not require Docker or public network access.
