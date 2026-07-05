@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import re
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +15,41 @@ from rss_service.logging import log_extra
 from rss_service.settings import Settings
 
 LOGGER = logging.getLogger(__name__)
+SOURCE_SLUG_PATTERN = re.compile(r"[^a-z0-9]+")
+
+
+def feed_source_name(feed: dict[str, Any]) -> str:
+    """Return the human source name for a feed result."""
+    for key in ("name", "url"):
+        value = str(feed.get(key) or "").strip()
+        if value:
+            return value
+    return "unknown-source"
+
+
+def feed_source_slug(feed: dict[str, Any]) -> str:
+    """Return a compact stable source key for user-facing fetch diagnostics."""
+    slug = SOURCE_SLUG_PATTERN.sub("-", feed_source_name(feed).lower()).strip("-")
+    return slug or "unknown-source"
+
+
+def feed_result(
+    feed: dict[str, Any],
+    *,
+    status: str,
+    new_entry_count: int,
+    error: str | None = None,
+) -> dict[str, Any]:
+    result = {
+        "feed_id": feed["id"],
+        "source": feed_source_slug(feed),
+        "source_name": feed_source_name(feed),
+        "status": status,
+        "new_entry_count": new_entry_count,
+    }
+    if error is not None:
+        result["error"] = error
+    return result
 
 
 class FeedService:
@@ -152,7 +188,7 @@ class FeedService:
                     checked_at=checked_at,
                 )
                 self.repository.connection.commit()
-                return {"feed_id": feed["id"], "status": "not_modified", "new_entry_count": 0}
+                return feed_result(feed, status="not_modified", new_entry_count=0)
             parsed = parse_feed_bytes(
                 response.content,
                 summary_max_length=self.settings.summary_max_length,
@@ -174,7 +210,7 @@ class FeedService:
                 checked_at=checked_at,
             )
             self.repository.connection.commit()
-            return {"feed_id": feed["id"], "status": "success", "new_entry_count": new_count}
+            return feed_result(feed, status="success", new_entry_count=new_count)
         except Exception as exc:
             error = exception_message(exc)
             self.repository.update_feed_failure(
@@ -200,12 +236,7 @@ class FeedService:
                 feed_name=feed["name"],
                 error=error,
             )
-            return {
-                "feed_id": feed["id"],
-                "status": "error",
-                "new_entry_count": 0,
-                "error": error,
-            }
+            return feed_result(feed, status="error", new_entry_count=0, error=error)
 
     def _fetch_fixture_feed(
         self,
@@ -237,7 +268,7 @@ class FeedService:
                 checked_at=checked_at,
             )
             self.repository.connection.commit()
-            return {"feed_id": feed["id"], "status": "success", "new_entry_count": new_count}
+            return feed_result(feed, status="success", new_entry_count=new_count)
         except Exception as exc:
             error = exception_message(exc)
             self.repository.update_feed_failure(
@@ -255,12 +286,7 @@ class FeedService:
                 checked_at=checked_at,
             )
             self.repository.connection.commit()
-            return {
-                "feed_id": feed["id"],
-                "status": "error",
-                "new_entry_count": 0,
-                "error": error,
-            }
+            return feed_result(feed, status="error", new_entry_count=0, error=error)
 
     def _fixture_path_for_feed(self, feed: dict[str, Any], fixture_dir: Path) -> Path:
         candidates = [

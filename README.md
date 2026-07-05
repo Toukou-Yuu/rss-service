@@ -76,6 +76,7 @@ Important variables:
 - `RSS_TIMEZONE`: report period timezone.
 - `RSS_FETCH_CONCURRENCY`: global fetch concurrency.
 - `RSS_PER_DOMAIN_CONCURRENCY`: per-domain fetch concurrency.
+- `RSS_FETCH_PROXY`: optional HTTP(S) proxy URL used by real fetches and feed tests.
 
 YAML config files:
 

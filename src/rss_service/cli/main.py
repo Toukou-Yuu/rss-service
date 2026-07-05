@@ -134,6 +134,7 @@ def feeds_test(url: Annotated[str, typer.Option("--url")]) -> None:
         headers={"User-Agent": settings.user_agent},
         timeout=settings.fetch_timeout_seconds,
         follow_redirects=True,
+        proxy=settings.fetch_proxy,
     )
     parsed = parse_feed_bytes(response.content, summary_max_length=settings.summary_max_length)
     typer.echo("ok: true")
